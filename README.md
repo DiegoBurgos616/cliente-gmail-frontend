@@ -1,5 +1,3 @@
----
-
 ## 🟩 README – FRONTEND (HTML + CSS + JS)
 
 ```md
