@@ -1,4 +1,4 @@
-const API_BASE = "https://9baabd47f8ab.ngrok-free.app";
+const API_BASE = "https://28e42ee87b66.ngrok-free.app";
 
 // ================================
 // Config login local
