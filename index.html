@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>GoMail</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="main.js"></script>
+
+ 
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="login" class="login-container">
+    <div class="login-card">
+      <div style="display:flex; justify-content:center; margin-bottom:8px;">
+        <div class="login-badge">
+          ✉️ Cliente de correo · Proyecto escolar
+        </div>
+      </div>
+      <h2 class="login-title">Iniciar sesión</h2>
+      <p class="login-subtitle">
+        Accede al cliente de correo con integración a una cuenta de Gmail
+        centralizada para pruebas.
+      </p>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="login-field">
+          <label for="login-user">Usuario</label>
+          <input id="login-user" type="text" required />
+        </div>
+        <div class="login-field">
+          <label for="login-pass">Contraseña</label>
+          <input id="login-pass" type="password" required />
+        </div>
+        <button type="submit" class="btn login-btn">
+          Entrar
+        </button>
+        <div class="login-error" id="login-error"></div>
+        <div class="login-hint">
+          Ejemplo para la escuela:<br />
+          <code>usuario: admin</code> · <code>contraseña: 1234</code>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP PRINCIPAL -->
+  <div id="app" class="container">
+    <div class="app-wrapper">
+      <!-- Columna izquierda: lista de correos -->
+      <div class="sidebar">
+        <div class="top-bar">
+          <div>
+            <h1>GoMail</h1>
+            <div class="app-badge">Gmail API</div>
+          </div>
+          <button class="btn-secondary" onclick="logout()">Salir</button>
+        </div>
+
+        <div class="mailbox-tabs">
+          <button id="tab-inbox" class="tab-btn tab-active" onclick="setMailbox('INBOX')">
+            📥 Entrada
+          </button>
+          <button id="tab-sent" class="tab-btn" onclick="setMailbox('SENT')">
+            📤 Enviados
+          </button>
+        </div>
+
+        <div class="search-row">
+          <input id="search-input" class="search-input" type="text"
+                 placeholder="Buscar en esta bandeja (ej. from:gmail.com, proyecto...)" />
+          <button class="btn-secondary" style="margin-bottom:0; font-size:11px;" onclick="handleSearch()">
+            🔍
+          </button>
+        </div>
+
+        <button class="btn" onclick="loadMessages()">
+          🔄 Actualizar
+        </button>
+
+        <ul id="messages"></ul>
+      </div>
+
+      <!-- Columna derecha: mensaje/redactar/contactos + calendario -->
+      <div class="content">
+        <!-- Centro -->
+        <div class="content-main">
+          <div class="detail-card">
+            <div class="section-title-row">
+              <div class="section-title">Mensaje</div>
+            </div>
+            <div class="detail-subject" id="detail-subject">
+              Selecciona un correo para verlo
+            </div>
+            <div class="detail-meta" id="detail-meta"></div>
+            <div class="detail-body" id="detail-body">
+              Aquí aparecerá el contenido del mensaje seleccionado.
+            </div>
+          </div>
+
+          <div class="compose-card">
+            <div class="section-title-row">
+              <div class="section-title">Redactar</div>
+            </div>
+
+            <form id="compose-form" onsubmit="sendEmail(event)">
+              <div>
+                <label for="to">Para</label>
+                <input id="to" type="email" required />
+              </div>
+              <div>
+                <label for="subject">Asunto</label>
+                <input id="subject" type="text" required />
+              </div>
+              <div>
+                <label for="message">Mensaje</label>
+                <textarea id="message" rows="6" required></textarea>
+              </div>
+
+              <div style="display:flex; gap:8px; margin-top:4px; flex-wrap:wrap;">
+                <button type="button" class="btn-secondary" onclick="improveWithAI()">
+                  ✨ Mejorar con IA
+                </button>
+                <button type="submit" class="btn">
+                  ✉️ Enviar correo
+                </button>
+              </div>
+
+              <div id="ai-status" style="font-size:12px; color:#9ca3af; margin-top:4px; min-height:14px;"></div>
+            </form>
+
+            <div id="send-status"></div>
+          </div>
+
+          <div class="compose-card" style="margin-top:10px;">
+            <div class="section-title-row">
+              <div class="section-title">Contactos</div>
+            </div>
+
+            <form id="contact-form" onsubmit="addContact(event)" style="margin-bottom:8px;">
+              <div class="form-grid">
+                <div>
+                  <div class="field-label">Nombre</div>
+                  <input
+                    id="contact-name"
+                    class="field-input"
+                    type="text"
+                    placeholder="Nombre del contacto"
+                    required
+                  />
+                </div>
+                <div>
+                  <div class="field-label">Correo electrónico</div>
+                  <input
+                    id="contact-email"
+                    class="field-input"
+                    type="email"
+                    placeholder="correo@ejemplo.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <div class="field-label">Etiqueta (opcional)</div>
+                  <input
+                    id="contact-tag"
+                    class="field-input"
+                    type="text"
+                    placeholder="Profesor, compañero, empresa..."
+                  />
+                </div>
+              </div>
+              <div class="compose-actions" style="margin-top:6px;">
+                <button type="submit" class="btn-secondary">
+                  ➕ Guardar contacto
+                </button>
+              </div>
+            </form>
+
+            <div class="field-label" style="margin-bottom:4px;">Lista de contactos</div>
+            <div id="contacts-list" style="display:flex; flex-direction:column; gap:6px; max-height:150px; overflow-y:auto;">
+              <!-- Aquí se renderizan los contactos -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Derecha: Calendario -->
+        <div class="content-events">
+          <div class="compose-card-events">
+            <div class="section-title-row">
+              <div class="section-title">Calendario de reuniones</div>
+            </div>
+
+            <form id="event-form" onsubmit="addEvent(event)" style="margin-bottom:8px;">
+              <div class="form-grid">
+                <div>
+                  <div class="field-label">Título</div>
+                  <input
+                    id="event-title"
+                    class="field-input"
+                    type="text"
+                    placeholder="Ej. Revisión de proyecto"
+                    required
+                  />
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <div style="flex:1;">
+                    <div class="field-label">Fecha</div>
+                    <input
+                      id="event-date"
+                      class="field-input"
+                      type="date"
+                      required
+                    />
+                  </div>
+                  <div style="flex:1;">
+                    <div class="field-label">Hora</div>
+                    <input
+                      id="event-time"
+                      class="field-input"
+                      type="time"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div class="field-label">Participantes (opcional)</div>
+                  <input
+                    id="event-participants"
+                    class="field-input"
+                    type="text"
+                    placeholder="Ej. Profesor Juan, Diego"
+                  />
+                </div>
+                <div>
+                  <div class="field-label">Notas (opcional)</div>
+                  <textarea
+                    id="event-notes"
+                    class="field-textarea"
+                    placeholder="Detalles de la reunión..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="compose-actions" style="margin-top:6px;">
+                <button type="submit" class="btn-secondary">
+                  📅 Agregar reunión
+                </button>
+              </div>
+            </form>
+
+            <div class="field-label" style="margin-bottom:4px;">Próximas reuniones</div>
+            <div id="events-list" class="events-list">
+              <!-- Aquí se renderizan las reuniones -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
