@@ -1,4 +1,19 @@
 const API_BASE = "http://localhost:3000";
+
+async function ensureGoogleSession() {
+  try {
+    const res = await fetch(API_BASE + "/auth/status");
+    const data = await res.json();
+
+    if (!data.authenticated) {
+      // No hay sesión con Google → mandamos a iniciar sesión
+      window.location.href = API_BASE + "/gmail/connect";
+    }
+  } catch (err) {
+    console.error("No se pudo verificar la sesión de Google:", err);
+  }
+}
+
 // ================================
 // Config login local
 // ================================
@@ -530,15 +545,36 @@ function updateUIByAuth() {
 // ================================
 // Init
 // ================================
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  // 1️⃣ Primero: revisamos si ya hay sesión de Google
+  await ensureGoogleSession();
+  // Si no hay, el usuario será redirigido a /gmail/connect
+  // y ESTE código dejará de ejecutarse porque cambiaste de página.
+
+  // 2️⃣ Si sí hay sesión (ya pasaste por Google antes), seguimos normal:
   const loginForm = document.getElementById("login-form");
   if (loginForm) {
     loginForm.addEventListener("submit", handleLogin);
   }
 
-  const composeForm = document.getElementById("compose-form");
-  if (composeForm) {
-    composeForm.addEventListener("submit", sendEmail);
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", handleLogout);
+  }
+
+  const searchForm = document.getElementById("search-form");
+  if (searchForm) {
+    searchForm.addEventListener("submit", handleSearch);
+  }
+
+  const inboxBtn = document.getElementById("tab-inbox");
+  if (inboxBtn) {
+    inboxBtn.addEventListener("click", () => setMailbox("INBOX"));
+  }
+
+  const sentBtn = document.getElementById("tab-sent");
+  if (sentBtn) {
+    sentBtn.addEventListener("click", () => setMailbox("SENT"));
   }
 
   const addContactForm = document.getElementById("add-contact-form");
@@ -553,3 +589,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateUIByAuth();
 });
+
